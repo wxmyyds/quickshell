@@ -63,6 +63,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: parent.modelData.text
+                textFormat: Text.PlainText
                 color: Appearance.m3colors.darkmode ? "white" : "black"
                 font.family: Fonts.ui
                 font.pixelSize: 15

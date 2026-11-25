@@ -68,7 +68,12 @@ Item {
         }
         Accessible.name: tooltip.text
 
-        WheelHandler {
+        // RippleButton's MouseArea consumes wheel events before this item's
+        // WheelHandler sees them on Qt 6.12, so the scroll did nothing. Handle the
+        // wheel on a MouseArea instead; Qt.NoButton keeps click handling intact.
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.NoButton
             onWheel: wheel => {
                 const step = 0.05;
                 let newVol = Volume.sinkVolume;
@@ -77,6 +82,7 @@ Item {
                 else
                     newVol -= step;
                 Volume.setSinkVolume(newVol);
+                wheel.accepted = true;
             }
         }
         onClicked: {

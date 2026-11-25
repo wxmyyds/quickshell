@@ -14441,4 +14441,11 @@ Windows: </source>
         <translation>顆粒：%1%</translation>
     </message>
 </context>
+<context>
+    <name>Lyrics</name>
+    <message>
+        <source>Invalid player lyrics</source>
+        <translation>播放器歌詞無效</translation>
+    </message>
+</context>
 </TS>

@@ -10,7 +10,7 @@ plugin。
 三个仓库是独立项目，测试和构建不得跨仓库依赖：
 
 - Clavis 负责 QML UI、Quickshell 生命周期、Niri IPC、窗口/工作区/输出、天气、
-  WeatherMapProvider、MediaPalette、快捷键录制、实时 Cava、MPRIS 歌词和
+  WeatherMapProvider、MediaPalette、快捷键录制、实时 Cava、播放器提供的歌词和
   同步时间轴。
 - `key-cli` 负责 `key shell`、`key ipc`、录屏、音频文件录制、剪贴板、键盘锁状态与
   原生系统指标采样 backend，以及对外 JSON/JSONL machine protocol。Clavis 直接消费
@@ -47,8 +47,11 @@ Clavis 保留自身 unit 和会话生命周期，详见开发文档。
   plugin 是 CMake/Qt 生成物，不能手写或编辑。
 - 展示组件不得创建 `Process` 或执行系统命令。录屏、录音和剪贴板通过带参数数组的
   `key` 调用，必须校验 machine response 的 `schemaVersion` 和错误。
-- FFmpeg、pactl、ffprobe、录音 PID、临时音频文件和 finalizer 属于 `key audio`；歌词
-  获取、缓存、LRC 解析和 MPRIS seek 属于 `Clavis.Lyrics`。
+- FFmpeg、pactl、ffprobe、录音 PID、临时音频文件和 finalizer 属于 `key audio`。
+- `Clavis.Lyrics` 只读取当前播放器提供的歌词：Cirrus 使用上游 Unix socket v1，
+  其他播放器可提供 MPRIS `xesam:asText`。禁止恢复歌词文件、持久缓存、联网搜索、
+  Python 中转或旧 `org.cirrus.Lyrics1` 接口；发现清单不属于歌词文件。歌词区域仅显示，
+  不处理拖动、滚轮、点击或 seek。
 
 ## Internationalization
 
@@ -105,6 +108,10 @@ Loader、id、Item child、函数名、文件布局、当前 object hierarchy �
 本任务引入 clang-tidy、`-Werror`、mypy、pyright 或大型 pre-commit 体系。
 
 ## Workflow and validation
+
+本 fork 的编译、自动化测试、打包和发布统一通过 GitHub Actions 执行，
+禁止在开发机执行下文会触发构建或测试的检查入口。本机仅做差异、语法、格式及数据解析检查。
+原有检查脚本由 Actions 调用；验证通过后仍须用户明确授权才能合并 PR。
 
 用户仅请求分析、比较或讨论时，进行回答所需的只读调查，不修改文件或运行无关检查。
 用户要求实施时，完成已授权工作和必要验证；可由现有代码与约定确定的细节自行处理。

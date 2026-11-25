@@ -47,6 +47,11 @@ Singleton {
 
         root.monitors = next;
         root.rescanDdcMonitors();
+        // ddcDetectProcess.onExited is the only place that calls initializeMonitor(0),
+        // but a missing ddcutil binary fails to start the process and onExited never
+        // fires. Without this fallback monitor.ready stays false and every brightness
+        // change is silently dropped. Initialise directly if the DDC probe never ran.
+        initFallbackTimer.restart();
     }
 
     Connections {
@@ -56,6 +61,18 @@ Singleton {
                 if (monitor.ready && !monitor.isDdc)
                     monitor.applyBacklight();
             }
+        }
+    }
+
+    Timer {
+        id: initFallbackTimer
+
+        interval: 1200
+        repeat: false
+        running: false
+        onTriggered: {
+            if (root.monitors.length > 0 && !root.monitors[0].ready)
+                root.initializeMonitor(0);
         }
     }
 

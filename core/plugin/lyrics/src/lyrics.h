@@ -1,201 +1,167 @@
 #pragma once
 
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include "observationprotocol.h"
+#include <QElapsedTimer>
+#include <QFileSystemWatcher>
+#include <QJsonArray>
+#include <QMap>
 #include <QObject>
-#include <QPointer>
 #include <QTimer>
-#include <QUrl>
 #include <QVariantList>
 #include <QVariantMap>
+#include <QVector>
 #include <QtQml/qqmlregistration.h>
+#include <memory>
 
+class QDBusConnection;
+class QDBusServiceWatcher;
+class QLocalSocket;
+
+// Read-only MPRIS selection; Cirrus observation v1 is the sole timed lyric source.
 class Lyrics : public QObject {
     Q_OBJECT
     QML_NAMED_ELEMENT(Lyrics)
     QML_SINGLETON
 
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
-    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
-    Q_PROPERTY(bool hasLyrics READ hasLyrics NOTIFY hasLyricsChanged)
-    Q_PROPERTY(bool hasSynchronizedLyrics READ hasSynchronizedLyrics NOTIFY synchronizedChanged)
+    Q_PROPERTY(bool hasLyrics READ hasLyrics NOTIFY lyricsChanged)
     Q_PROPERTY(QVariantList lyrics READ lyrics NOTIFY lyricsChanged)
-    Q_PROPERTY(QVariantList candidates READ candidates NOTIFY candidatesChanged)
-    Q_PROPERTY(QVariantMap selectedCandidate READ selectedCandidate NOTIFY selectedCandidateChanged)
-    Q_PROPERTY(QString provider READ provider NOTIFY providerChanged)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
-    Q_PROPERTY(double offsetMs READ offsetMs WRITE setOffsetMs NOTIFY offsetMsChanged)
-    Q_PROPERTY(QString trackArtist READ trackArtist NOTIFY trackChanged)
-    Q_PROPERTY(QString trackTitle READ trackTitle NOTIFY trackChanged)
-    Q_PROPERTY(QString trackAlbum READ trackAlbum NOTIFY trackChanged)
-    Q_PROPERTY(double trackDuration READ trackDuration NOTIFY trackChanged)
-    Q_PROPERTY(QString trackPlayerId READ trackPlayerId NOTIFY trackChanged)
+    Q_PROPERTY(QVariantMap document READ document NOTIFY synchronizationChanged)
+    Q_PROPERTY(QVariantMap state READ state NOTIFY synchronizationChanged)
+    Q_PROPERTY(int currentLine READ currentLine NOTIFY synchronizationChanged)
+    Q_PROPERTY(QString currentText READ currentText NOTIFY synchronizationChanged)
+    Q_PROPERTY(bool synchronized READ isSynchronized NOTIFY synchronizationChanged)
+    Q_PROPERTY(bool isSynchronized READ isSynchronized NOTIFY synchronizationChanged)
 
   public:
-    explicit Lyrics(QObject *parent = nullptr);
-
-    // Tests and embedders may provide a deterministic HTTP transport before
-    // starting a request. The QML singleton keeps the default manager.
-    void setNetworkAccessManager(QNetworkAccessManager *manager);
-
+    explicit Lyrics(QObject *parent = nullptr, bool useSessionBus = true);
+    ~Lyrics() override;
     QString status() const { return m_status; }
-    bool loading() const { return m_loading; }
-    bool hasLyrics() const { return m_hasLyrics; }
-    bool hasSynchronizedLyrics() const { return m_hasSynchronizedLyrics; }
+    bool hasLyrics() const { return !m_lyrics.isEmpty(); }
     QVariantList lyrics() const { return m_lyrics; }
-    QVariantList candidates() const { return m_candidates; }
-    QVariantMap selectedCandidate() const { return m_selectedCandidate; }
-    QString provider() const { return m_provider; }
     QString error() const { return m_error; }
-    double offsetMs() const { return m_offsetMs; }
-    void setOffsetMs(double offsetMs);
-
-    QString trackArtist() const { return m_artist; }
-    QString trackTitle() const { return m_title; }
-    QString trackAlbum() const { return m_album; }
-    double trackDuration() const { return m_duration; }
-    QString trackPlayerId() const { return m_playerId; }
-
-    Q_INVOKABLE void setTrack(const QString &artist, const QString &title, const QString &album = {},
-                              double duration = 0.0, const QString &playerId = {});
+    QVariantMap document() const { return m_document; }
+    QVariantMap state() const { return m_state; }
+    int currentLine() const { return m_currentLine; }
+    QString currentText() const;
+    bool isSynchronized() const { return m_synchronized; }
+    Q_INVOKABLE void setMetadata(const QString &dbusName, const QVariantMap &metadata,
+                                 const QString &playerIdentity = {});
     Q_INVOKABLE void clearTrack();
-    Q_INVOKABLE void refresh();
-    Q_INVOKABLE void requestCandidates();
-    Q_INVOKABLE void selectCandidate(int index);
-    Q_INVOKABLE QVariantList parseLrc(const QString &text, double offsetMs = 0.0) const;
-    Q_INVOKABLE int indexForTime(double positionSeconds) const;
-    Q_INVOKABLE double timeForIndex(int index) const;
 
   signals:
     void statusChanged();
-    void loadingChanged();
-    void hasLyricsChanged();
-    void synchronizedChanged();
     void lyricsChanged();
-    void candidatesChanged();
-    void selectedCandidateChanged();
-    void providerChanged();
     void errorChanged();
-    void offsetMsChanged();
-    void trackChanged();
+    void synchronizationChanged();
 
   private:
-    enum class ReplyKind {
-        LrclibTrack,
-        LrclibSearch,
-        NetEaseSearch,
-        NetEaseLyrics,
+    friend class LyricsTest;
+    struct Context {
+        quint64 player = 0;
+        quint64 socket = 0;
     };
-
-    enum class ProviderOutcome {
-        Pending,
-        NotFound,
-        CandidateRejected,
-        NoLyrics,
-        Success,
-        TransportError,
-        InvalidResponse,
-        ParseFailure,
+    struct Endpoint {
+        QString path;
+        QString instance;
     };
+    struct Request {
+        QString method;
+        QString binding;
+        quint64 documentEpoch = 0;
+        QString track;
+        int from = 0;
+        qint64 sent = 0;
+    };
+    struct Track {
+        QJsonObject summary;
+        QJsonArray lines;
+        bool complete = false;
+        qsizetype wordCount = 0;
+    };
+    Context context() const { return {m_playerEpoch, m_socketEpoch}; }
+    bool isCurrent(Context context) const;
+    bool isCirrus() const;
+    void publish(const QString &status, QVariantList lines, const QString &error = {},
+                 QVariantMap document = {}, QVariantMap state = {}, int currentLine = -1,
+                 bool synchronized = false);
+    void publishMetadata(const QVariantMap &metadata);
+    void startOwnerWatch();
+    void selectOwner(const QString &owner);
+    void resolveOwnerPid();
+    void stopPlayer();
+    void resetSocket();
+    void resetDocument();
+    void discover();
+    void watchDiscovery(const QStringList &paths);
+    void retryDiscovery();
+    void connectNext();
+    void readSocket(Context context);
+    void fail(bool invalid = false);
+    void receive(Context context, const QJsonObject &message);
+    void acceptSnapshot(const QJsonObject &snapshot);
+    void acceptPage(const Request &request, const QJsonObject &page);
+    void request(const QString &method, const QString &track = {}, int from = 0);
+    void pump();
+    void maintain();
+    void assembleDocument();
+    bool validateCursors();
+    void updateCursor(qint64 elapsed = -1);
+    QString preferredTrack(const QString &kind) const;
+    QString binding(const QJsonObject &snapshot) const;
 
-    QNetworkAccessManager m_defaultManager;
-    QNetworkAccessManager *m_manager = &m_defaultManager;
-    QPointer<QNetworkReply> m_reply;
-    QTimer m_loadDebounce;
+    bool m_useSessionBus;
+    std::unique_ptr<QDBusConnection> m_bus;
+    QDBusServiceWatcher *m_serviceWatcher = nullptr;
+    QString m_service;
+    QString m_playerIdentity;
+    QString m_owner;
+    qint64 m_ownerPid = 0;
+    bool m_pidPending = false;
+    quint64 m_playerEpoch = 0;
+    quint64 m_socketEpoch = 0;
+    quint64 m_documentEpoch = 0;
+    QLocalSocket *m_socket = nullptr;
+    QString m_endpoint;
+    QString m_instance;
+    QList<Endpoint> m_candidates;
+    QFileSystemWatcher m_files;
+    QTimer m_discoveryTimer;
+    QTimer m_maintenanceTimer;
+    QTimer m_lineTimer;
+    QElapsedTimer m_monotonic;
+    qint64 m_connectedAt = 0;
+    int m_retryMs = 250;
+    CirrusObservation::Framer m_framer;
+    bool m_readQueued = false;
+    bool m_hello = false;
+    bool m_subscribed = false;
+    QMap<QString, Request> m_pending;
+    quint64 m_nextRequest = 0;
+    double m_tokens = 16;
+    qint64 m_tokenAt = 0;
+    qint64 m_requestsAfter = 0;
+    QJsonObject m_snapshot;
+    bool m_haveSequence = false;
+    quint64 m_sequence = 0;
+    quint64 m_revision = 0;
+    QString m_binding;
+    QMap<QString, Track> m_tracks;
+    qsizetype m_documentBytes = 0;
+    qsizetype m_textUnits = 0;
+    QVector<int> m_displayIndices;
+    QVector<qint64> m_displayStarts;
+    bool m_documentReady = false;
+    QString m_displayTrack;
+    QVariantMap m_snapshotVariant;
+    qint64 m_receivedAt = 0;
 
-    quint64 m_generation = 0;
-    bool m_forceNetwork = false;
-    bool m_autoFallback = false;
-    int m_netEaseCandidateIndex = 0;
-
-    ProviderOutcome m_lrclibOutcome = ProviderOutcome::Pending;
-    ProviderOutcome m_netEaseSearchOutcome = ProviderOutcome::Pending;
-    ProviderOutcome m_netEaseCandidateOutcome = ProviderOutcome::Pending;
-    bool m_netEaseSawValidLyricResponse = false;
-    bool m_netEaseSawNoLyrics = false;
-    bool m_netEaseSawParseFailure = false;
-
-    bool m_loading = false;
-    bool m_hasLyrics = false;
-    bool m_hasSynchronizedLyrics = false;
     QString m_status = QStringLiteral("idle");
     QVariantList m_lyrics;
-    QVariantList m_candidates;
-    QVariantMap m_selectedCandidate;
-    QVariantList m_netEaseCandidates;
-    QVariantMap m_pendingCandidate;
-    QString m_provider;
     QString m_error;
-
-    QString m_artist;
-    QString m_title;
-    QString m_album;
-    double m_duration = 0.0;
-    QString m_playerId;
-    double m_offsetMs = 0.0;
-
-    // The raw provider payload is retained so changing offset can rebuild the
-    // timeline without asking a provider again.
-    QString m_sourceText;
-    QString m_sourceProvider;
-    QVariantMap m_sourceCandidate;
-
-    void setStatus(const QString &status);
-    void setLoading(bool loading);
-    void setHasLyrics(bool value);
-    void setHasSynchronizedLyrics(bool value);
-    void setProvider(const QString &provider);
-    void setError(const QString &error);
-    void setSelectedCandidate(const QVariantMap &candidate);
-    void clearLyrics();
-    void clearCandidates();
-    void clearSource();
-    void resetProviderOutcomes();
-    void resetNetEaseSession();
-
-    quint64 beginGeneration();
-    void cancelInFlight();
-    void scheduleLoad();
-    void startLoad(quint64 generation, bool bypassCache);
-
-    bool loadLocalLyrics(quint64 generation);
-    bool loadCachedLyrics(quint64 generation);
-    bool acceptRawLyrics(const QString &provider, const QString &synced, const QString &plain,
-                         const QVariantMap &candidate, quint64 generation, bool writeCache);
-    void finishEmpty(const QString &message = {});
-    void finishError(const QString &message);
-    void rebuildTimelineFromSource();
-
-    void startLrclibTrack(quint64 generation);
-    void startLrclibSearch(quint64 generation);
-    void startNetEaseSearch(quint64 generation);
-    void startNetEaseLyrics(const QVariantMap &candidate, quint64 generation);
-    void startReply(const QUrl &url, ReplyKind kind, quint64 generation);
-    void handleReply(QNetworkReply *reply, ReplyKind kind, quint64 generation);
-
-    bool handleLrclibTrack(const QJsonObject &json, quint64 generation);
-    void handleLrclibSearch(const QJsonDocument &document, quint64 generation);
-    void handleNetEaseSearch(const QJsonDocument &document, quint64 generation);
-    bool handleNetEaseLyrics(const QJsonObject &json, quint64 generation);
-    void tryNextNetEaseCandidate(quint64 generation);
-
-    void appendCandidates(const QVariantList &candidates);
-    QVariantList parseLrclibCandidates(const QJsonDocument &document) const;
-    QVariantList parseNetEaseCandidates(const QJsonDocument &document) const;
-
-    void cacheLyrics(const QString &provider, const QString &id, const QString &synced, const QString &plain,
-                     const QVariantMap &candidate);
-    QString cacheDirectory() const;
-    QString cacheIndexPath() const;
-    QString cachePath(const QString &provider, const QString &id) const;
-    QString cacheKey() const;
-    QString localDirectory() const;
-    QString localLyricsPath() const;
-    QString findLocalLyricsPath(const QString &directory) const;
-
-    QUrl lrclibUrl(bool search) const;
-    QUrl netEaseSearchUrl() const;
-    QUrl netEaseLyricsUrl(const QString &id) const;
+    QVariantMap m_document;
+    QVariantMap m_state;
+    int m_currentLine = -1;
+    bool m_synchronized = false;
 };

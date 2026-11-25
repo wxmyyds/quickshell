@@ -14452,4 +14452,11 @@ Windows: </translation>
         <translation>Grain: %1%</translation>
     </message>
 </context>
+<context>
+    <name>Lyrics</name>
+    <message>
+        <source>Invalid player lyrics</source>
+        <translation>Invalid player lyrics</translation>
+    </message>
+</context>
 </TS>

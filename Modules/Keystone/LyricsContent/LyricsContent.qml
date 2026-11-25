@@ -8,25 +8,12 @@ Item {
     required property var player
     property bool vertical: false
     property string edge: "top"
+    // Native observation timing supplies -1 before the first timed line and
+    // holds the last started line across gaps; this presenter is display-only.
     readonly property var lyricsModel: Lyrics.lyrics
     readonly property string artUrl: player ? player.trackArtUrl || "" : ""
-    readonly property int currentLineIndex: {
-        const lines = Lyrics.lyrics;
-        if (!root.player || !Lyrics.hasSynchronizedLyrics || !lines || lines.length === 0)
-            return -1;
-
-        const position = root.player === MediaManager.active ? MediaManager.currentPosition : Math.max(0, Number(
-                                                                                                           root.player.position)
-                                                                                                       || 0);
-        return Lyrics.indexForTime(position);
-    }
-    readonly property string currentLyric: currentLineIndex >= 0 && currentLineIndex < lyricsModel.length ? String(
-                                                                                                                lyricsModel[currentLineIndex].text
-                                                                                                                || "") : lyricsModel
-                                                                                                            && lyricsModel.length
-                                                                                                            > 0 ? String(
-                                                                                                                      lyricsModel[0].text
-                                                                                                                      || "") : ""
+    readonly property int currentLineIndex: Lyrics.currentLine
+    readonly property string currentLyric: Lyrics.currentText
 
     implicitWidth: presenter.item ? presenter.item.implicitWidth : 0
     implicitHeight: presenter.item ? presenter.item.implicitHeight : 0
@@ -41,7 +28,10 @@ Item {
         id: horizontalComponent
 
         HorizontalLyricsLayout {
-            lyricsModel: root.lyricsModel
+            // StrictlyEnforceRange follows the native index without pointer input.
+            // Hiding the presenter also prevents a first-line flash at index -1.
+            visible: root.currentLineIndex >= 0 || Lyrics.status !== "ready"
+            lyricsModel: root.currentLineIndex >= 0 ? root.lyricsModel : []
             currentLineIndex: root.currentLineIndex
             artUrl: root.artUrl
             player: root.player
