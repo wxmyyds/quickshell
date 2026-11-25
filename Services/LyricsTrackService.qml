@@ -9,31 +9,17 @@ Singleton {
 
     readonly property var player: MediaManager.active
 
-    function playerIdentity(playerObject) {
-        if (!playerObject)
-            return "";
-
-        const service = playerObject.dbusName || playerObject.busName
-            || playerObject.identity || "";
-        const uniqueId = playerObject.uniqueId === undefined
-            ? "" : String(playerObject.uniqueId);
-        return String(service) + ":" + uniqueId;
-    }
-
     function sync() {
-        const current = MediaManager.active;
-        if (!current || !String(current.trackTitle || "").trim()) {
+        const current = root.player;
+        if (!current) {
             Lyrics.clearTrack();
             return;
         }
-
-        Lyrics.setTrack(
-            String(current.trackArtist || ""),
-            String(current.trackTitle || ""),
-            String(current.trackAlbum || ""),
-            Number(current.length) > 0 ? Number(current.length) : 0,
-            root.playerIdentity(current)
-        );
+        // MPRIS selects the player; uniqueId invalidates a replaced instance.
+        // The native consumer binds Cirrus observation sockets to its bus owner.
+        // Other players expose only their ordinary xesam:asText metadata.
+        Lyrics.setMetadata(String(current.dbusName || ""), current.metadata || {}, String(current.uniqueId
+                                                                                          || ""));
     }
 
     function initialize() {
@@ -45,18 +31,23 @@ Singleton {
     Connections {
         target: MediaManager
 
-        function onActiveChanged() { root.sync(); }
+        function onActiveChanged() {
+            root.sync();
+        }
     }
 
     Connections {
         target: root.player
         ignoreUnknownSignals: true
 
-        function onTrackTitleChanged() { root.sync(); }
-        function onTrackArtistChanged() { root.sync(); }
-        function onTrackAlbumChanged() { root.sync(); }
-        function onLengthChanged() { root.sync(); }
-        function onUniqueIdChanged() { root.sync(); }
-        function onIdentityChanged() { root.sync(); }
+        function onMetadataChanged() {
+            root.sync();
+        }
+        function onDbusNameChanged() {
+            root.sync();
+        }
+        function onUniqueIdChanged() {
+            root.sync();
+        }
     }
 }

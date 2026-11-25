@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED COMPONENTS Test)
+find_package(Qt6 REQUIRED COMPONENTS Test DBus)
 find_program(BASH_EXECUTABLE bash REQUIRED)
 
 qt_add_executable(icon_theme_controller_tests

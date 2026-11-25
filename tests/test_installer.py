@@ -259,7 +259,8 @@ class InstallerContracts(unittest.TestCase):
         operation = installer.Installer(args(), {**DATA, "installerRelease": "v2026.9.12"})
         operation.work = self.root
         responses, _ = self.release_fixture("clavis-shell")
-        del responses["https://api.github.com/repos/StatIndet/quickshell/releases/latest"]
+        repository = DATA["releaseSources"]["clavis-shell"]["repository"]
+        del responses[f"https://api.github.com/repos/{repository}/releases/latest"]
         with patch.object(
             installer.urllib.request,
             "urlopen",

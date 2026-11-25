@@ -4,6 +4,13 @@
 
 A desktop shell for [niri](https://github.com/YaLTeR/niri), built with [Quickshell](https://quickshell.org/), QML, Qt 6 and native C++ modules.
 
+This maintained fork of [StatIndet/quickshell](https://github.com/StatIndet/quickshell) keeps local fixes in source.
+Arch packages are built by [arch-cloud-pkgs](https://github.com/wxmyyds/arch-cloud-pkgs), without a packaging patch layer.
+Lyrics use the Cirrus upstream Unix socket v1 protocol; the lyric area follows playback and is display-only.
+Enable **向其他程序提供播放状态 (私货)** in Cirrus to expose lyrics (off by default).
+Other MPRIS players may supply plain `xesam:asText`; Clavis never searches lyric files, caches or online services.
+Only the runtime discovery manifest is read from disk; lyric content comes through the socket.
+
 <table>
   <tr>
     <td width="25%"><a href="https://raw.githubusercontent.com/StatIndet/picture/main/clavis-shell/Screenshot%20from%202026-09-12%2015-20-21.png"><img src="https://raw.githubusercontent.com/StatIndet/picture/main/clavis-shell/Screenshot%20from%202026-09-12%2015-20-21.png" alt="Clavis Shell screenshot 1" width="100%" /></a></td>

@@ -95,7 +95,8 @@ Item {
 
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
-            lyricText: root.lyric
+            // Keep the lead-in blank; never substitute the document's first line.
+            lyricText: root.status === "ready" ? root.lyric : ""
         }
 
         Text {
@@ -143,6 +144,7 @@ Item {
 
                     anchors.centerIn: parent
                     text: parent.modelData.text
+                    textFormat: Text.PlainText
                     color: Appearance.m3colors.darkmode ? "white" : "black"
                     font.family: Fonts.ui
                     font.pixelSize: 15

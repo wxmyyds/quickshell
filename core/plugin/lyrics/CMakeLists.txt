@@ -1,3 +1,5 @@
+find_package(Qt6 REQUIRED COMPONENTS DBus Network)
+
 qt_add_library(ClavisLyrics SHARED)
 
 set_target_properties(ClavisLyrics PROPERTIES
@@ -9,6 +11,8 @@ qt_add_qml_module(ClavisLyrics
     SOURCES
         src/lyrics.h
         src/lyrics.cpp
+        src/observationprotocol.h
+        src/observationprotocol.cpp
     OUTPUT_DIRECTORY ${CLAVIS_QML_BUILD_DIR}/Clavis/Lyrics
 )
 
@@ -16,6 +20,7 @@ target_include_directories(ClavisLyrics PUBLIC src)
 
 target_link_libraries(ClavisLyrics PRIVATE
     Qt6::Core
+    Qt6::DBus
     Qt6::Network
     Qt6::Qml
 )

@@ -1,6 +1,6 @@
 {
   "name": "clavis-shell",
-  "repository": "StatIndet/quickshell",
+  "repository": "wxmyyds/quickshell",
   "versionFile": "VERSION",
   "arch": "x86_64",
   "sourceRoots": [
@@ -647,7 +647,7 @@
   ],
   "releaseSources": {
     "clavis-shell": {
-      "repository": "StatIndet/quickshell",
+      "repository": "wxmyyds/quickshell",
       "packages": [
         "clavis-shell"
       ]
