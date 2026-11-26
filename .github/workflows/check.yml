@@ -28,6 +28,16 @@ jobs:
         run: git config --system --add safe.directory "$GITHUB_WORKSPACE"
       - name: Independent checks and package build
         run: scripts/ci/arch.sh
+      - name: Keep the tested package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-package
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            .packaging/packages/*.pkg.tar.*
+            !.packaging/packages/*-debug-*.pkg.tar.*
       - name: Keep package metadata and diagnostics
         if: always()
         uses: actions/upload-artifact@v4

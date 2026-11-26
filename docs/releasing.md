@@ -97,4 +97,6 @@ Clavis can also render the standalone installer with `scripts/release.py install
 
 `scripts/ci/arch.sh` is intentionally restricted to the disposable Arch container; it installs
 build dependencies inside that container and must not be used as a host setup script. Local
-checks continue to use the repository's documented development check entry point.
+checks continue to use the repository's documented development check entry point. The Check
+workflow uploads the packages built after those checks pass as the `arch-package` artifact,
+excluding the `-debug` split; they are disposable diagnostics rather than release assets.
