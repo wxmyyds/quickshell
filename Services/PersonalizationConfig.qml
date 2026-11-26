@@ -276,7 +276,6 @@ Singleton {
     ]
     property string lockScreenStyle: "default"
     property string themeMode: "dark"
-    property string settingsWindowControlsSide: "left"
     property string superKeyStyle: "text"
     readonly property var superKeyStyles: [
         {
@@ -1469,10 +1468,6 @@ Singleton {
         setValue("themeMode", value === "light" ? "light" : "dark");
     }
 
-    function setSettingsWindowControlsSide(value) {
-        setValue("settingsWindowControlsSide", value === "right" ? "right" : "left");
-    }
-
     function setCursorTheme(value) {
         setValue("cursorTheme", root.normalizedCursorTheme(value));
     }
@@ -1920,7 +1915,6 @@ Singleton {
                 "matugenScheme": root.matugenScheme,
                 "matugenTemplates": root.normalizedMatugenTemplates(root.matugenTemplates),
                 "mode": root.themeMode,
-                "settingsWindowControlsSide": root.settingsWindowControlsSide,
                 "superKeyStyle": root.superKeyStyle,
                 "lockScreenStyle": root.lockScreenStyle,
                 "cursorTheme": root.cursorTheme,
@@ -2070,7 +2064,6 @@ Singleton {
         root.matugenTemplates = normalizedMatugenTemplates(theme.matugenTemplates);
         root.lockScreenStyle = normalizedOption(root.lockScreenStyles, theme.lockScreenStyle, "default");
         root.themeMode = theme.mode === "light" ? "light" : "dark";
-        root.settingsWindowControlsSide = theme.settingsWindowControlsSide === "right" ? "right" : "left";
         root.superKeyStyle = root.superKeyStyles.some(style => style.value === theme.superKeyStyle)
                 ? theme.superKeyStyle : "text";
         root.cursorTheme = root.normalizedCursorTheme(theme.cursorTheme);

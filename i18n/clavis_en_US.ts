@@ -9930,29 +9930,6 @@ Right click: Control Center</translation>
     </message>
 </context>
 <context>
-    <name>SettingsWindowControls</name>
-    <message>
-        <location filename="../Modules/ControlCenter/SettingsWindowControls.qml" line="85"/>
-        <source>Close</source>
-        <translation>Close</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/SettingsWindowControls.qml" line="94"/>
-        <source>Minimize</source>
-        <translation>Minimize</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/SettingsWindowControls.qml" line="103"/>
-        <source>Restore</source>
-        <translation>Restore</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/SettingsWindowControls.qml" line="103"/>
-        <source>Maximize</source>
-        <translation>Maximize</translation>
-    </message>
-</context>
-<context>
     <name>ShortcutMap</name>
     <message>
         <location filename="../Modules/ControlCenter/ShortcutMap.qml" line="46"/>
@@ -12504,11 +12481,6 @@ detected</translation>
         <translation>Dark</translation>
     </message>
     <message>
-        <location filename="../Common/generated/SearchCatalog.js" line="2042"/>
-        <source>Settings window</source>
-        <translation>Settings window</translation>
-    </message>
-    <message>
         <location filename="../Common/generated/SearchCatalog.js" line="2043"/>
         <source>matugen color scheme</source>
         <translation>matugen color scheme</translation>
@@ -12583,21 +12555,6 @@ detected</translation>
         <location filename="../Common/generated/SearchCatalog.js" line="2048"/>
         <source>Fonts</source>
         <translation>Fonts</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/ThemePage.qml" line="467"/>
-        <source>Window controls</source>
-        <translation>Window controls</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/ThemePage.qml" line="472"/>
-        <source>Left</source>
-        <translation>Left</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/ThemePage.qml" line="476"/>
-        <source>Right</source>
-        <translation>Right</translation>
     </message>
     <message>
         <location filename="../Modules/ControlCenter/ThemePage.qml" line="676"/>

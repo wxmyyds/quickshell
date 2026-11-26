@@ -9925,29 +9925,6 @@ Right click: Control Center</source>
     </message>
 </context>
 <context>
-    <name>SettingsWindowControls</name>
-    <message>
-        <location filename="../Modules/ControlCenter/SettingsWindowControls.qml" line="85"/>
-        <source>Close</source>
-        <translation>關閉</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/SettingsWindowControls.qml" line="94"/>
-        <source>Minimize</source>
-        <translation>最小化</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/SettingsWindowControls.qml" line="103"/>
-        <source>Restore</source>
-        <translation>還原</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/SettingsWindowControls.qml" line="103"/>
-        <source>Maximize</source>
-        <translation>最大化</translation>
-    </message>
-</context>
-<context>
     <name>ShortcutMap</name>
     <message>
         <location filename="../Modules/ControlCenter/ShortcutMap.qml" line="46"/>
@@ -12495,11 +12472,6 @@ detected</source>
         <translation>深色</translation>
     </message>
     <message>
-        <location filename="../Common/generated/SearchCatalog.js" line="2042"/>
-        <source>Settings window</source>
-        <translation>設定視窗</translation>
-    </message>
-    <message>
         <location filename="../Common/generated/SearchCatalog.js" line="2043"/>
         <source>matugen color scheme</source>
         <translation>matugen配色方案</translation>
@@ -12574,21 +12546,6 @@ detected</source>
         <location filename="../Common/generated/SearchCatalog.js" line="2048"/>
         <source>Fonts</source>
         <translation>字型</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/ThemePage.qml" line="467"/>
-        <source>Window controls</source>
-        <translation>視窗按鈕</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/ThemePage.qml" line="472"/>
-        <source>Left</source>
-        <translation>左側</translation>
-    </message>
-    <message>
-        <location filename="../Modules/ControlCenter/ThemePage.qml" line="476"/>
-        <source>Right</source>
-        <translation>右側</translation>
     </message>
     <message>
         <location filename="../Modules/ControlCenter/ThemePage.qml" line="676"/>
