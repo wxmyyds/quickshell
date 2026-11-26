@@ -5,7 +5,6 @@ import QtQuick.Layouts
 import QtQuick.Window
 import Quickshell
 import Quickshell.Wayland
-import Clavis.Niri
 import qs.Common
 import qs.Services
 import qs.Components
@@ -31,13 +30,6 @@ FloatingWindow {
     readonly property var searchPageAnchor: pageSearchAnchor
     function toggleMaximize() {
         root.maximized = !root.maximized;
-    }
-
-    function minimizeWindow() {
-        const window = Niri.searchWindows(root.title).find(entry => entry.title === root.title);
-        if (window && Niri.supportsMinimize && Niri.minimizeWindow(window.id))
-            return;
-        root.minimized = true;
     }
 
     function prepareSearchTarget(entry, serial) {
@@ -234,21 +226,10 @@ FloatingWindow {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 40
 
-                SettingsWindowControls {
-                    id: windowControls
-
-                    x: PersonalizationConfig.settingsWindowControlsSide === "right" ? parent.width - width : 0
-                    anchors.top: parent.top
-                    maximized: root.maximized
-                    onCloseRequested: root.hideWindow()
-                    onMinimizeRequested: root.minimizeWindow()
-                    onMaximizeRequested: root.toggleMaximize()
-                }
-
                 Item {
                     id: searchBarSlot
                     anchors.centerIn: parent
-                    width: Math.min(360, parent.width - windowControls.width * 2 - Metrics.spacingL * 2)
+                    width: Math.min(360, parent.width - Metrics.spacingL * 2)
                     height: 36
                 }
 
@@ -404,7 +385,7 @@ FloatingWindow {
             anchors.fill: parent
             z: 500
             barSlot: searchBarSlot
-            sideMargin: root.contentPadding + windowControls.width + Metrics.spacingXL
+            sideMargin: root.contentPadding + Metrics.spacingXL
             onCollapsed: focusBoundary.forceActiveFocus(Qt.OtherFocusReason)
         }
     }

@@ -58,6 +58,9 @@ if [[ $name == key-cli ]]; then
 elif [[ $name == clavis-shell ]]; then
     runuser -u builder -- python3 scripts/release.py installer --output .packaging/release/install-arch.sh
 fi
-# Pacman binaries are CI diagnostics; releases distribute source, metadata and wheels.
-find .packaging/release -maxdepth 1 -name '*.pkg.tar.*' -delete
+# Pacman binaries are CI diagnostics kept for installer debugging; releases distribute source,
+# metadata and wheels. Moving them out also keeps SHA256SUMS free of local build outputs.
+packages_dir=$root/.packaging/packages
+install -d "$packages_dir"
+find .packaging/release -maxdepth 1 -name '*.pkg.tar.*' -exec mv -t "$packages_dir" -- {} +
 runuser -u builder -- python3 scripts/release.py checksums .packaging/release
